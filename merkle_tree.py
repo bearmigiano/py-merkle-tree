@@ -139,10 +139,11 @@ def test_all_proofs(claims, root, proofs):
 def main():
     # Example usage
     claims = []
-    for _ in range(1887):
+    for _ in range(5):
         amount = random.randint(1 * 10**15, 100 * 10**18) # Random amount between 0.001-100 ether
         account: LocalAccount = Account.create()
         claims.append((account.address, amount))
+    claims.append(("0x1A594e7aCb60a4fA0C9d7525695ef7524D047525", 100000000000000000000))
 
     # Generate tree and proofs
     root, proofs = create_merkle_tree(claims)
@@ -151,6 +152,7 @@ def main():
     # Save to file
     output = {
         "root": root,
+        "root_bytes": [int(b) for b in bytes.fromhex(root[2:])],
         "claims": {
             address: {
                 "account": address,
