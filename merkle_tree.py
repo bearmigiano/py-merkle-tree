@@ -5,6 +5,9 @@ from typing import List, Dict
 import json
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
+import time
+
+random.seed(time.time())
 
 def to_bytes32(value: int) -> bytes:
     """Convert an integer to 32-byte representation."""
@@ -18,6 +21,9 @@ def encode_leaf(address: str, amount: int) -> bytes:
     # Remove '0x' prefix and convert to bytes
     address_bytes = bytes.fromhex(address[2:].lower().zfill(40))
     amount_bytes = amount.to_bytes(32, 'big')
+
+    print(f"abiencode: {(address_bytes + amount_bytes).hex()}")
+    print(f"keccak: {keccak(address_bytes + amount_bytes).hex()}")
 
     # Concatenate and hash
     return keccak(address_bytes + amount_bytes)
@@ -138,12 +144,19 @@ def test_all_proofs(claims, root, proofs):
 
 def main():
     # Example usage
+    wallets = ["0x1A594e7aCb60a4fA0C9d7525695ef7524D047525", "0x250784Aa94D744525ab2D4e68AC1d1a742005FBB"]
+    n_wallets = 10
     claims = []
-    for _ in range(5):
-        amount = random.randint(1 * 10**15, 100 * 10**18) # Random amount between 0.001-100 ether
-        account: LocalAccount = Account.create()
-        claims.append((account.address, amount))
-    claims.append(("0x1A594e7aCb60a4fA0C9d7525695ef7524D047525", 100000000000000000000))
+
+    if len(wallets) > 0:
+        for wallet in wallets:
+            amount = random.randint(1 * 10**15, 100 * 10**18) # Random amount between 0.001-100 ether
+            claims.append((wallet, amount))
+    else:
+        for _ in range(n_wallets):
+            amount = random.randint(1 * 10**15, 100 * 10**18) # Random amount between 0.001-100 ether
+            account: LocalAccount = Account.create()
+            claims.append((account.address, amount))
 
     # Generate tree and proofs
     root, proofs = create_merkle_tree(claims)
