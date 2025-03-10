@@ -150,7 +150,7 @@ def main():
 
     if len(wallets) > 0:
         for wallet in wallets:
-            amount = random.randint(1 * 10**15, 100 * 10**18) # Random amount between 0.001-100 ether
+            amount = random.randint(1 * 10**15, 5.75 * 10**18) # Random amount between 0.001-100 ether
             claims.append((wallet, amount))
     else:
         for _ in range(n_wallets):
