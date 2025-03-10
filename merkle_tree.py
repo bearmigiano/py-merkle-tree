@@ -9,9 +9,11 @@ import time
 
 random.seed(time.time())
 
+
 def to_bytes32(value: int) -> bytes:
     """Convert an integer to 32-byte representation."""
-    return value.to_bytes(32, 'big')
+    return value.to_bytes(32, "big")
+
 
 def encode_leaf(address: str, amount: int) -> bytes:
     """
@@ -20,13 +22,14 @@ def encode_leaf(address: str, amount: int) -> bytes:
     """
     # Remove '0x' prefix and convert to bytes
     address_bytes = bytes.fromhex(address[2:].lower().zfill(40))
-    amount_bytes = amount.to_bytes(32, 'big')
+    amount_bytes = amount.to_bytes(32, "big")
 
     print(f"abiencode: {(address_bytes + amount_bytes).hex()}")
     print(f"keccak: {keccak(address_bytes + amount_bytes).hex()}")
 
     # Concatenate and hash
     return keccak(address_bytes + amount_bytes)
+
 
 def create_merkle_tree(claims: List[tuple[str, int]]) -> tuple:
     """
@@ -60,13 +63,12 @@ def create_merkle_tree(claims: List[tuple[str, int]]) -> tuple:
         # Handle pairs of nodes
         for i in range(0, len(layer), 2):
             # Calculate the range of leaves this pair covers
-            start_idx = i * (2 ** layer_num)
-            end_idx = min((i + 2) * (2 ** layer_num), len(leaves))
-            mid = start_idx + (2 ** layer_num)  # Use layer size to determine split point
+            start_idx = i * (2**layer_num)
+            end_idx = min((i + 2) * (2**layer_num), len(leaves))
+            mid = start_idx + (2**layer_num)  # Use layer size to determine split point
 
             print(f"start_idx: {start_idx}")
             print(f"end_idx: {end_idx}")
-
 
             if i + 1 >= len(layer):
                 # Odd number of nodes, promote the last one to next layer
@@ -75,7 +77,7 @@ def create_merkle_tree(claims: List[tuple[str, int]]) -> tuple:
                 continue
 
             left, right = layer[i], layer[i + 1]
-            if int.from_bytes(left, 'big') < int.from_bytes(right, 'big'):
+            if int.from_bytes(left, "big") < int.from_bytes(right, "big"):
                 parent = keccak(left + right)
             else:
                 parent = keccak(right + left)
@@ -112,11 +114,12 @@ def create_merkle_tree(claims: List[tuple[str, int]]) -> tuple:
 
     # Convert proofs to hex strings for easier handling
     hex_proofs = {
-        addr: ['0x' + proof.hex() for proof in addr_proof]
+        addr: ["0x" + proof.hex() for proof in addr_proof]
         for addr, addr_proof in proofs.items()
     }
 
-    return ('0x' + root.hex(), hex_proofs)
+    return ("0x" + root.hex(), hex_proofs)
+
 
 def verify_proof(address: str, amount: int, proof: List[str], root: str) -> bool:
     """Verify a Merkle proof."""
@@ -125,12 +128,13 @@ def verify_proof(address: str, amount: int, proof: List[str], root: str) -> bool
     for proof_element in proof:
         proof_bytes = bytes.fromhex(proof_element[2:])
         # node = keccak(node + proof_bytes)
-        if int.from_bytes(node, 'big') < int.from_bytes(proof_bytes, 'big'):
+        if int.from_bytes(node, "big") < int.from_bytes(proof_bytes, "big"):
             node = keccak(node + proof_bytes)
         else:
             node = keccak(proof_bytes + node)
 
-    return '0x' + node.hex() == root.lower()
+    return "0x" + node.hex() == root.lower()
+
 
 def test_all_proofs(claims, root, proofs):
     print("\nTesting all proofs:")
@@ -142,19 +146,27 @@ def test_all_proofs(claims, root, proofs):
         # print(f"Proof: {proof}")
         print(f"Valid: {'✓' if is_valid else '✗'}\n")
 
+
 def main():
     # Example usage
-    wallets = ["0x1A594e7aCb60a4fA0C9d7525695ef7524D047525", "0x250784Aa94D744525ab2D4e68AC1d1a742005FBB"]
+    wallets = [
+        "0x1A594e7aCb60a4fA0C9d7525695ef7524D047525",
+        "0x250784Aa94D744525ab2D4e68AC1d1a742005FBB",
+    ]
     n_wallets = 10
     claims = []
 
     if len(wallets) > 0:
         for wallet in wallets:
-            amount = random.randint(1 * 10**15, 5.75 * 10**18) # Random amount between 0.001-100 ether
+            amount = random.randint(
+                1 * 10**15, 5.75 * 10**18
+            )  # Random amount between 0.001-100 ether
             claims.append((wallet, amount))
     else:
         for _ in range(n_wallets):
-            amount = random.randint(1 * 10**15, 100 * 10**18) # Random amount between 0.001-100 ether
+            amount = random.randint(
+                1 * 10**15, 100 * 10**18
+            )  # Random amount between 0.001-100 ether
             account: LocalAccount = Account.create()
             claims.append((account.address, amount))
 
@@ -171,13 +183,16 @@ def main():
                 "account": address,
                 "amount": amount,
                 "proof": proofs[address],
-                "proof_base64": [base64.b64encode(bytes.fromhex(p[2:])).decode('utf-8') for p in proofs[address]]
+                "proof_base64": [
+                    base64.b64encode(bytes.fromhex(p[2:])).decode("utf-8")
+                    for p in proofs[address]
+                ],
             }
             for address, amount in claims
-        }
+        },
     }
 
-    with open('merkle_proofs.json', 'w') as f:
+    with open("merkle_proofs.json", "w") as f:
         json.dump(output, f, indent=2)
 
     print("\nProofs saved to merkle_data.json")
@@ -191,6 +206,7 @@ def main():
     print(f"\nVerification test: {'✓ Valid' if is_valid else '✗ Invalid'}")
 
     test_all_proofs(claims, root, proofs)
+
 
 if __name__ == "__main__":
     main()
