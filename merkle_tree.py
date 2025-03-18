@@ -150,18 +150,23 @@ def test_all_proofs(claims, root, proofs):
 def main():
     # Example usage
     wallets = [
-        "0x1A594e7aCb60a4fA0C9d7525695ef7524D047525",
-        "0x250784Aa94D744525ab2D4e68AC1d1a742005FBB",
+        "0x143f0dede9a5e200ecaadc20d89b5ee867f3f450",
+        "0x21b62d53bd94b83030efdb98750e6c19d9f823ca",
+        "0xddbe3a2358c569d1e041f278bd514e92e17c67fd",
+        "0xd3d372e5e9b28cf65bd66f25c13f98a916be4f68"
+    ]
+    amounts = [
+        13879561389256743706,
+        13050950232963241689,
+        47909734553233272755,
+        54585354876625517725
     ]
     n_wallets = 10
     claims = []
 
     if len(wallets) > 0:
-        for wallet in wallets:
-            amount = random.randint(
-                1 * 10**15, 5.75 * 10**18
-            )  # Random amount between 0.001-100 ether
-            claims.append((wallet, amount))
+        for i in range(len(wallets)):
+            claims.append((wallets[i], amounts[i]))
     else:
         for _ in range(n_wallets):
             amount = random.randint(
@@ -210,3 +215,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # pubkey = bytes.fromhex(
+    #     "94ee582f23b3873a9242b0a701cd30b1b62d800c1525059624085e06fc93dd93bc52da47228f25d7da8c7988802f05c7"
+    # )
+    # print(keccak(pubkey).hex())
